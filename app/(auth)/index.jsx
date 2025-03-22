@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import styles from "../../assets/styles/login.styles";
 import React, { useState } from "react";
@@ -22,9 +23,6 @@ export default function Login() {
 
   const { user, token, isLoading, error, loginUser } = useAuthStore();
   const router = useRouter();
-
-  console.log("user data in login", user)
-  console.log("token data in login", token)
 
   const handleLogin = async () => {
     try {

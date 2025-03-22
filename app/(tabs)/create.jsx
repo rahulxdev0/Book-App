@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import COLORS from "@/constants/colors";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import useAuthStore from "../../store/authStore";
 
 export default function Create() {
   const [title, setTitle] = useState("");
@@ -27,6 +28,7 @@ export default function Create() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+  const { token } = useAuthStore();
 
   const pickImage = async () => {
     try {
@@ -70,7 +72,45 @@ export default function Create() {
     }
   };
 
-  const handleSubmit = async () => {};
+  const handleSubmit = async () => {
+    if (!title || !caption) {
+      Alert.alert("Error", "Please fill all the required fields");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const formData = {
+        title: title,
+        caption: caption,
+        rating: rating.toString(),
+        image: `data:image/png;base64,${imageBase64}`,
+      };
+
+      const response = await fetch("http://localhost:3000/api/books", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create book");
+      }
+
+      const data = await response.json();
+      console.log("Book created successfully:", data);
+    } catch (error) {
+      console.error("Error submitting book:", error);
+      Alert.alert("Error", error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+      // router.push("/");
+    }
+  };
 
   const renderRatingPicker = () => {
     const starts = [];
@@ -175,7 +215,7 @@ export default function Create() {
               ) : (
                 <>
                   <Ionicons
-                    name="cloud-upload-outline" 
+                    name="cloud-upload-outline"
                     size={20}
                     color={COLORS.white}
                     style={styles.buttonIcon}
